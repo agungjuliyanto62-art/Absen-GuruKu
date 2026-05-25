@@ -1,0 +1,57 @@
+@import "leaflet/dist/leaflet.css";
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #1A73E8;
+  --color-primary-dark: #1557B0;
+  --color-secondary: #34A853;
+  --color-accent: #FBBC04;
+  --color-danger: #EA4335;
+  
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+}
+
+:root {
+  --app-blue: #1A73E8;
+  --app-gradient: linear-gradient(180deg, #1A73E8 0%, #0D47A1 100%);
+}
+
+@layer base {
+  html, body, #root {
+    @apply h-full overflow-hidden;
+  }
+  body {
+    @apply bg-gray-50 text-slate-900 antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}
+
+/* Custom Scrollbar for Mobile Feel */
+::-webkit-scrollbar {
+  width: 0px;
+}
+
+.glass-card {
+  @apply bg-white/90 backdrop-blur-md border border-white/20 shadow-xl;
+}
+
+.menu-icon-shadow {
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.05));
+}
+
+/* Custom Scrollbar for Desktop/Super-Admin Panels */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #020617; /* Slate 950 */
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #1e293b; /* Slate 800 */
+  border-radius: 9999px;
+  border: 1px solid #334155; /* Slate 700 boundary */
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #f43f5e; /* Rose 500 */
+}

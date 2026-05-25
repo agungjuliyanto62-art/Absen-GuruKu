@@ -1,0 +1,30 @@
+{
+  "short_name": "Absen",
+  "name": "Absen GuruKu",
+  "description": "Aplikasi Absensi Multi-Tenant Pintar Sekolah",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/logo.svg",
+      "type": "image/svg+xml",
+      "sizes": "512x512",
+      "purpose": "maskable"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#090d16",
+  "theme_color": "#0ea5e9",
+  "display": "standalone",
+  "orientation": "portrait"
+}

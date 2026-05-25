@@ -1,0 +1,241 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile information",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "role": { "type": "string" },
+        "department": { "type": "string" },
+        "avatar": { "type": "string" },
+        "employeeId": { "type": "string" },
+        "joinDate": { "type": "string" },
+        "status": { "type": "string", "enum": ["active", "inactive"] },
+        "position": { "type": "string" },
+        "subject": { "type": "string" },
+        "password": { "type": "string" },
+        "location": {
+          "type": "object",
+          "properties": {
+            "lat": { "type": "number" },
+            "lng": { "type": "number" },
+            "address": { "type": "string" }
+          }
+        }
+      },
+      "required": ["id", "name", "role", "employeeId", "status"]
+    },
+    "AttendanceRecord": {
+      "title": "AttendanceRecord",
+      "description": "Clock in and clock out records",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "date": { "type": "string" },
+        "clockIn": { "type": "string" },
+        "clockOut": { "type": "string" },
+        "status": { "type": "string" },
+        "locationIn": { "type": "string" },
+        "locationOut": { "type": "string" },
+        "photoIn": { "type": "string" },
+        "photoOut": { "type": "string" },
+        "notes": { "type": "string" }
+      },
+      "required": ["id", "userId", "date", "status"]
+    },
+    "ActivityReport": {
+      "title": "ActivityReport",
+      "description": "Daily activity reports",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "date": { "type": "string" },
+        "activityName": { "type": "string" },
+        "description": { "type": "string" },
+        "startTime": { "type": "string" },
+        "endTime": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] }
+      },
+      "required": ["id", "userId", "date", "activityName", "status"]
+    },
+    "LeaveRequest": {
+      "title": "LeaveRequest",
+      "description": "Requests for leave, sick, or permits",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "type": { "type": "string" },
+        "startDate": { "type": "string" },
+        "endDate": { "type": "string" },
+        "reason": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "attachment": { "type": "string" }
+      },
+      "required": ["id", "userId", "type", "startDate", "endDate", "status"]
+    },
+    "OvertimeRequest": {
+      "title": "OvertimeRequest",
+      "description": "Requests for overtime work",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "date": { "type": "string" },
+        "startTime": { "type": "string" },
+        "endTime": { "type": "string" },
+        "reason": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] }
+      },
+      "required": ["id", "userId", "date", "startTime", "endTime", "status"]
+    },
+    "ShiftRequest": {
+      "title": "ShiftRequest",
+      "description": "Requests for shift changes",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "date": { "type": "string" },
+        "currentShift": { "type": "string" },
+        "requestedShift": { "type": "string" },
+        "reason": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] }
+      },
+      "required": ["id", "userId", "date", "currentShift", "requestedShift", "status"]
+    },
+    "CalendarReminder": {
+      "title": "CalendarReminder",
+      "description": "User personal reminders",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "date": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "startTime": { "type": "string" },
+        "endTime": { "type": "string" }
+      },
+      "required": ["id", "userId", "date", "title"]
+    },
+    "Post": {
+      "title": "Post",
+      "description": "Social feed posts",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userAvatar": { "type": "string" },
+        "content": { "type": "string" },
+        "image": { "type": "string" },
+        "timestamp": { "type": "string" },
+        "likes": { "type": "number" }
+      },
+      "required": ["id", "userId", "userName", "content", "timestamp", "likes"]
+    },
+    "LearningMedia": {
+      "title": "LearningMedia",
+      "description": "Educational media items",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "url": { "type": "string" },
+        "category": { "type": "string" },
+        "addedBy": { "type": "string" },
+        "date": { "type": "string" }
+      },
+      "required": ["id", "title", "url", "addedBy", "date"]
+    },
+    "NewsItem": {
+      "title": "NewsItem",
+      "description": "School news items",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "image": { "type": "string" },
+        "date": { "type": "string" },
+        "category": { "type": "string" }
+      },
+      "required": ["id", "title", "content", "date"]
+    },
+    "SchoolSettings": {
+      "title": "SchoolSettings",
+      "description": "Global school settings",
+      "type": "object",
+      "properties": {
+        "radius": { "type": "number" },
+        "center": {
+          "type": "object",
+          "properties": {
+            "lat": { "type": "number" },
+            "lng": { "type": "number" }
+          }
+        },
+        "locationName": { "type": "string" },
+        "runningText": { "type": "string" },
+        "workHours": {
+          "type": "object",
+          "properties": {
+            "entryStart": { "type": "string" },
+            "entryEnd": { "type": "string" },
+            "exitStart": { "type": "string" },
+            "exitEnd": { "type": "string" }
+          }
+        }
+      }
+    },
+    "SchoolProfile": {
+      "title": "SchoolProfile",
+      "description": "School profile details",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "address": { "type": "string" },
+        "phone": { "type": "string" },
+        "email": { "type": "string" },
+        "website": { "type": "string" },
+        "vision": { "type": "string" },
+        "mission": { "type": "array", "items": { "type": "string" } },
+        "headmaster": { "type": "string" }
+      }
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "User notifications",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "date": { "type": "string" },
+        "isRead": { "type": "boolean" },
+        "type": { "type": "string", "enum": ["news", "announcement", "alert"] }
+      },
+      "required": ["id", "title", "message", "date", "isRead", "type"]
+    }
+  },
+  "firestore": {
+    "users": { "schema": "User", "description": "Collection of user profiles" },
+    "attendance": { "schema": "AttendanceRecord", "description": "Collection of attendance records" },
+    "activities": { "schema": "ActivityReport", "description": "Collection of daily activity reports" },
+    "leaveRequests": { "schema": "LeaveRequest", "description": "Collection of leave requests" },
+    "overtimeRequests": { "schema": "OvertimeRequest", "description": "Collection of overtime requests" },
+    "shiftRequests": { "schema": "ShiftRequest", "description": "Collection of shift requests" },
+    "reminders": { "schema": "CalendarReminder", "description": "Collection of user reminders" },
+    "posts": { "schema": "Post", "description": "Collection of community posts" },
+    "learningMedia": { "schema": "LearningMedia", "description": "Collection of educational materials" },
+    "news": { "schema": "NewsItem", "description": "Collection of school news" },
+    "settings": { "schema": "SchoolSettings", "description": "Singleton for school settings (doc: school)" },
+    "profile": { "schema": "SchoolProfile", "description": "Singleton for school profile (doc: school)" },
+    "notifications": { "schema": "Notification", "description": "Collection of app notifications" }
+  }
+}

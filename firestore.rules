@@ -1,0 +1,140 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Global Helper functions
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+    
+    function isStringBounded(val, maxLen) {
+      return val is string && val.size() <= maxLen;
+    }
+    
+    function isOptionalStringBounded(val, maxLen) {
+      return val == null || (val is string && val.size() <= maxLen);
+    }
+
+    function isNumber(val) {
+      return val is int || val is float;
+    }
+
+    // Default catch-all denies everything by default to prevent leak vulnerabilities
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 1. Settings Collection (Singleton: docId 'school')
+    match /settings/{docId} {
+      allow read: if true; // Allowed for offline-safe checking and initial boot status
+      allow write: if docId == 'school' 
+        && request.resource.data.keys().hasAll(['radius', 'center', 'locationName']) 
+        && request.resource.data.radius is int
+        && isStringBounded(request.resource.data.locationName, 250);
+    }
+
+    // 2. Profile Collection (docId 'school')
+    match /profile/{docId} {
+      allow read: if true; // Publicly queryable for guests checking details
+      allow write: if docId == 'school'
+        && request.resource.data.keys().hasAll(['name', 'address', 'phone', 'email'])
+        && isStringBounded(request.resource.data.name, 150);
+    }
+
+    // 3. Users Collection
+    match /users/{userId} {
+      allow read: if true; // Needed on frontend to look up school mates or check roles during auth initialization
+      allow write: if isValidId(userId) 
+        && request.resource.data.keys().hasAll(['id', 'name', 'role', 'employeeId', 'status'])
+        && request.resource.data.status in ['active', 'inactive']
+        && isStringBounded(request.resource.data.name, 200)
+        && request.resource.data.role in ['admin', 'teacher', 'super-admin'];
+    }
+
+    // 4. Attendance Collection
+    match /attendance/{recordId} {
+      allow read: if true;
+      allow write: if isValidId(recordId)
+        && request.resource.data.keys().hasAll(['id', 'userId', 'date', 'status'])
+        && isStringBounded(request.resource.data.status, 30)
+        && isStringBounded(request.resource.data.userId, 100)
+        && isStringBounded(request.resource.data.date, 20);
+    }
+
+    // 5. Activities Collection
+    match /activities/{id} {
+      allow read: if true;
+      allow write: if isValidId(id)
+        && request.resource.data.keys().hasAll(['id', 'userId', 'date', 'activityName', 'status'])
+        && isStringBounded(request.resource.data.status, 30)
+        && isStringBounded(request.resource.data.activityName, 300);
+    }
+
+    // 6. LeaveRequests Collection
+    match /leaveRequests/{id} {
+      allow read: if true;
+      allow write: if isValidId(id)
+        && request.resource.data.keys().hasAll(['id', 'userId', 'type', 'startDate', 'endDate', 'status'])
+        && isStringBounded(request.resource.data.status, 30)
+        && isStringBounded(request.resource.data.type, 50);
+    }
+
+    // 7. OvertimeRequests Collection
+    match /overtimeRequests/{id} {
+      allow read: if true;
+      allow write: if isValidId(id)
+        && request.resource.data.keys().hasAll(['id', 'userId', 'date', 'startTime', 'endTime', 'status'])
+        && isStringBounded(request.resource.data.status, 30);
+    }
+
+    // 8. ShiftRequests Collection
+    match /shiftRequests/{id} {
+      allow read: if true;
+      allow write: if isValidId(id)
+        && request.resource.data.keys().hasAll(['id', 'userId', 'date', 'currentShift', 'requestedShift', 'status'])
+        && isStringBounded(request.resource.data.status, 30);
+    }
+
+    // 9. Reminders Collection
+    match /reminders/{id} {
+      allow read: if true;
+      allow write: if isValidId(id)
+        && request.resource.data.keys().hasAll(['id', 'userId', 'date', 'title'])
+        && isStringBounded(request.resource.data.title, 200);
+    }
+
+    // 10. Posts Collection
+    match /posts/{id} {
+      allow read: if true;
+      allow write: if isValidId(id)
+        && request.resource.data.keys().hasAll(['id', 'userId', 'userName', 'content', 'timestamp', 'likes'])
+        && isStringBounded(request.resource.data.content, 2000)
+        && request.resource.data.likes is int;
+    }
+
+    // 11. LearningMedia Collection
+    match /learningMedia/{id} {
+      allow read: if true;
+      allow write: if isValidId(id)
+        && request.resource.data.keys().hasAll(['id', 'title', 'url', 'addedBy', 'date'])
+        && isStringBounded(request.resource.data.title, 250);
+    }
+
+    // 12. News Collection
+    match /news/{id} {
+      allow read: if true;
+      allow write: if isValidId(id)
+        && request.resource.data.keys().hasAll(['id', 'title', 'content', 'date'])
+        && isStringBounded(request.resource.data.title, 250);
+    }
+
+    // 13. Notifications Collection
+    match /notifications/{id} {
+      allow read: if true;
+      allow write: if isValidId(id)
+        && request.resource.data.keys().hasAll(['id', 'title', 'message', 'date', 'isRead', 'type'])
+        && isStringBounded(request.resource.data.title, 250)
+        && request.resource.data.isRead is bool;
+    }
+  }
+}

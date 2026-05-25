@@ -1,0 +1,12 @@
+{
+  "name": "Absen GuruKu",
+  "description": "Smart Attendance System with Geotagging, Face Authentication, and Employee Management.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
