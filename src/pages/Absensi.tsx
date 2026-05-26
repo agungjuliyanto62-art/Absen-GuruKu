@@ -261,10 +261,10 @@ export default function Absensi() {
 
     const canvas = document.createElement('canvas');
     
-    // Scale down image to max 640px to compress the size for Firebase
+    // Scale down image to max 480px to compress the size for Firebase
     let width = video.videoWidth;
     let height = video.videoHeight;
-    const max_dimension = 640;
+    const max_dimension = 480;
     if (width > max_dimension || height > max_dimension) {
       if (width > height) {
         height = Math.round((height * max_dimension) / width);
@@ -337,8 +337,8 @@ export default function Absensi() {
       );
     });
 
-    // Compress to JPEG with 0.6 quality (extremely lightweight!)
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
+    // Compress to JPEG with 0.5 quality (extremely lightweight!)
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.5);
     setPhoto(dataUrl);
     
     setVerifying(true);

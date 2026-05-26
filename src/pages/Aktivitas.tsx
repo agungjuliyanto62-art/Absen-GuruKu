@@ -42,7 +42,7 @@ export default function Aktivitas() {
           const canvas = document.createElement('canvas');
           let width = img.width;
           let height = img.height;
-          const maxDim = 800;
+          const maxDim = 600;
           if (width > maxDim || height > maxDim) {
             if (width > height) {
               height = Math.round((height * maxDim) / width);
@@ -57,7 +57,7 @@ export default function Aktivitas() {
           const ctx = canvas.getContext('2d');
           if (ctx) {
             ctx.drawImage(img, 0, 0, width, height);
-            const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.6);
+            const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.5);
             setImage(compressedDataUrl);
           } else {
             setImage(reader.result as string);
