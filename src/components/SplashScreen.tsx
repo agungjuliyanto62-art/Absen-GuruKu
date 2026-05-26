@@ -12,10 +12,10 @@ export default function SplashScreen({ onComplete }: { onComplete: () => void, k
     }));
     setDots(newDots);
 
-    // Complete after 2.5 seconds
+    // Complete after 400ms for immediate access
     const timer = setTimeout(() => {
       onComplete();
-    }, 2800);
+    }, 400);
 
     return () => clearTimeout(timer);
   }, [onComplete]);

@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'motion/react';
 
 export default function Izin() {
   const navigate = useNavigate();
-  const { addLeaveRequest, user } = useApp();
+  const { addLeaveRequest, user, settings } = useApp();
   const [formData, setFormData] = useState({
     type: 'izin',
     startDate: '',
@@ -30,6 +30,49 @@ export default function Izin() {
     }
   };
 
+  const getWhatsAppInfo = () => {
+    const targetPhone = settings?.whatsappNumber || "6285669833136";
+    const rawTemplate = settings?.whatsappTemplate || "Halo Atasan, saya [Nama] mengajukan izin [Jenis] dari tanggal [TanggalMulai] s/d [TanggalSelesai] dengan alasan: [Alasan]. Terima kasih.";
+    
+    const formattedType = (() => {
+      switch (formData.type) {
+        case 'sakit': return 'Sakit';
+        case 'izin': return 'Izin';
+        case 'cuti': return 'Cuti';
+        case 'terlambat': return 'Terlambat';
+        case 'pulang_cepat': return 'Pulang Cepat';
+        default: return formData.type.charAt(0).toUpperCase() + formData.type.slice(1);
+      }
+    })();
+
+    const formatDateIndo = (dateStr: string) => {
+      if (!dateStr) return '';
+      try {
+        const parts = dateStr.split('-');
+        if (parts.length === 3) {
+          const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+          const day = parseInt(parts[2], 10);
+          const monthIndex = parseInt(parts[1], 10) - 1;
+          const year = parts[0];
+          return `${day} ${months[monthIndex]} ${year}`;
+        }
+        return dateStr;
+      } catch (e) {
+        return dateStr;
+      }
+    };
+
+    const text = rawTemplate
+      .replace(/\[Nama\]/g, user?.name || '')
+      .replace(/\[Jenis\]/g, formattedType)
+      .replace(/\[TanggalMulai\]/g, formatDateIndo(formData.startDate))
+      .replace(/\[TanggalSelesai\]/g, formatDateIndo(formData.endDate))
+      .replace(/\[Alasan\]/g, formData.reason || '');
+
+    const link = `https://wa.me/${targetPhone}?text=${encodeURIComponent(text)}`;
+    return { targetPhone, text, link };
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
@@ -44,20 +87,16 @@ export default function Izin() {
     
     setSubmitted(true);
     
-    // Construct WhatsApp Message
-    const waNumber = "6285669833136";
-    const waText = `Halo Atasan, Saya mengajukan permohonan ${formData.type.toUpperCase().replace('_', ' ')}\n\nNama: ${user.name}\nTanggal: ${formData.startDate} s/d ${formData.endDate}\nAlasan: ${formData.reason}\n\nMohon untuk ditinjau. Terima kasih.`;
-    const fullWaLink = `https://wa.me/${waNumber}?text=${encodeURIComponent(waText)}`;
+    // Construct WhatsApp Message dynamically
+    const { link } = getWhatsAppInfo();
     
     setTimeout(() => {
-      window.open(fullWaLink, '_blank');
+      window.open(link, '_blank');
     }, 2000);
   };
 
   if (submitted) {
-    const waNumber = "6285669833136";
-    const waText = `Halo Atasan, Saya mengajukan permohonan ${formData.type.toUpperCase().replace('_', ' ')}\n\nNama: ${user?.name}\nTanggal: ${formData.startDate} s/d ${formData.endDate}\nAlasan: ${formData.reason}\n\nMohon untuk ditinjau. Terima kasih.`;
-    const fullWaLink = `https://wa.me/${waNumber}?text=${encodeURIComponent(waText)}`;
+    const { link } = getWhatsAppInfo();
 
     return (
       <div className="flex-1 flex flex-col items-center justify-center p-6 bg-white h-full">
@@ -73,7 +112,7 @@ export default function Izin() {
         
         <div className="w-full space-y-3">
           <button 
-            onClick={() => window.open(fullWaLink, '_blank')}
+            onClick={() => window.open(link, '_blank')}
             className="w-full bg-[#25D366] text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-3 shadow-xl shadow-emerald-100"
           >
             <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">

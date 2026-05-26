@@ -184,30 +184,9 @@ export default function Dashboard() {
   return (
     <div className="flex flex-col min-h-screen bg-slate-50 relative">
       {/* Header Area */}
-      <div className="relative h-[600px] bg-primary px-6 pt-10 overflow-hidden">
-        {/* Advanced 3D Animated Background */}
+      <div className="relative h-[390px] bg-primary px-6 pt-10 overflow-hidden">
+        {/* Dynamic Gradient Background Accent (Fast and lightweight) */}
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none opacity-30">
-          <motion.div 
-            animate={{ 
-              rotateX: [0, 45, 0],
-              rotateY: [0, 90, 0],
-              scale: [1, 1.2, 1],
-            }}
-            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-            className="absolute inset-[-50%] grid grid-cols-[repeat(20,minmax(0,1fr))] grid-rows-[repeat(20,minmax(0,1fr))] gap-2"
-            style={{ perspective: '1000px', transformStyle: 'preserve-3d' }}
-          >
-            {[...Array(400)].map((_, i) => (
-              <div 
-                key={i} 
-                className="w-1.5 h-1.5 bg-white/30 rounded-full shadow-[0_0_8px_rgba(255,255,255,0.5)]" 
-                style={{
-                  transform: `translateZ(${Math.sin(i) * 60}px)`
-                }}
-              />
-            ))}
-          </motion.div>
-          
           <div className="absolute top-0 right-0 w-full h-full">
             <div className="absolute top-[-10%] right-[-10%] w-96 h-96 rounded-full bg-white/20 blur-3xl" />
             <div className="absolute bottom-[-10%] left-[-10%] w-72 h-72 rounded-full bg-blue-400/30 blur-2xl" />
@@ -215,22 +194,18 @@ export default function Dashboard() {
         </div>
         {/* Top Utility Bar */}
         <div className="relative z-20 flex justify-between items-center mb-6">
-          <motion.div
-            initial={{ x: -20, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ duration: 0.8 }}
-          >
+          <div>
             <h1 className="text-lg font-bold text-white tracking-tight">
               Hallo, Selamat Datang
             </h1>
-          </motion.div>
+          </div>
 
           <div className="flex gap-3">
             <motion.button 
               onClick={() => setShowNotif(true)}
               whileHover={{ rotate: 15, scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
-              className="w-10 h-10 bg-white/20 backdrop-blur-xl rounded-xl text-white flex items-center justify-center relative border border-white/30 shadow-xl group"
+              className="w-10 h-10 bg-white/20 rounded-xl text-white flex items-center justify-center relative border border-white/30 shadow-xl group"
             >
               <Bell size={20} className="group-hover:animate-bounce" />
               {unreadCount > 0 && (
@@ -244,7 +219,7 @@ export default function Dashboard() {
               onClick={() => logout()}
               whileHover={{ scale: 1.1, backgroundColor: 'rgba(239, 68, 68, 0.3)' }}
               whileTap={{ scale: 0.9 }}
-              className="w-10 h-10 bg-white/20 backdrop-blur-xl rounded-xl text-white flex items-center justify-center border border-white/30 shadow-xl"
+              className="w-10 h-10 bg-white/20 rounded-xl text-white flex items-center justify-center border border-white/30 shadow-xl"
             >
               <LogOut size={20} />
             </motion.button>
@@ -254,26 +229,21 @@ export default function Dashboard() {
         {/* User Profile Info */}
         <div className="flex justify-start items-start relative z-10 mb-4">
           <div className="flex items-center gap-4">
-             <motion.div 
-               initial={{ x: -30, opacity: 0 }}
-               animate={{ x: 0, opacity: 1 }}
-               whileHover={{ scale: 1.05 }}
+             <div 
                onClick={() => navigate('/profile')}
-               className="w-16 h-16 rounded-2xl border-2 border-white/40 overflow-hidden bg-white/20 backdrop-blur-xl flex items-center justify-center shadow-2xl relative group cursor-pointer"
+               className="w-16 h-16 rounded-2xl border-2 border-white/40 overflow-hidden bg-white/20 flex items-center justify-center shadow-2xl relative group cursor-pointer transition-transform duration-250 active:scale-95 hover:scale-105"
              >
                 <img 
                    src={user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'Staff')}&background=fff&color=2563eb&bold=true&size=128`} 
                   alt="Avatar"
                   className="w-full h-full object-cover transition-transform group-hover:scale-110"
                 />
-             </motion.div>
-             <motion.div 
-               initial={{ x: 30, opacity: 0 }}
-               animate={{ x: 0, opacity: 1 }}
+             </div>
+             <div 
                onClick={() => navigate('/profile')}
-               className="text-white pt-1 cursor-pointer group"
+               className="text-white pt-1 cursor-pointer group active:opacity-80"
              >
-                <h2 className="text-md font-black tracking-tight leading-none mb-1 drop-shadow-lg opacity-90 uppercase italic group-hover:translate-x-1 transition-transform">
+                <h2 className="text-md font-black tracking-tight leading-none mb-1 drop-shadow-lg opacity-90 uppercase italic transition-transform group-hover:translate-x-1">
                    {user?.name}
                 </h2>
                 <div className="flex items-center gap-1.5">
@@ -285,37 +255,35 @@ export default function Dashboard() {
                      {user?.employeeId} • {user?.position || 'Staff'}
                    </p>
                 </div>
-             </motion.div>
+             </div>
           </div>
         </div>
 
         {/* Running Text / Marquee inside Header */}
         <div className="relative z-10 px-1">
-          <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl py-2 overflow-hidden shadow-lg relative">
-            <motion.div
-              initial={{ x: "100%" }}
-              animate={{ x: "-100%" }}
-              transition={{
-                duration: 15,
-                repeat: Infinity,
-                ease: "linear",
-              }}
-              className="inline-block whitespace-nowrap"
-            >
-              <span className="text-[11px] font-black italic text-white tracking-widest flex items-center gap-4 px-4 uppercase">
+          <div className="bg-white/10 border border-white/20 rounded-xl py-2 overflow-hidden shadow-lg relative">
+            <div className="animate-css-marquee">
+              <span className="text-[11px] font-black italic text-white tracking-widest flex items-center gap-4 px-4 uppercase whitespace-nowrap">
                 <span className="text-yellow-400 animate-pulse">✨</span>
                 {settings.runningText}
                 <span className="text-white/40">|</span>
                 Kepala Sekolah: {schoolProfile.headmaster}
                 <span className="text-yellow-400 animate-pulse">✨</span>
               </span>
-            </motion.div>
+              <span className="text-[11px] font-black italic text-white tracking-widest flex items-center gap-4 px-4 uppercase whitespace-nowrap">
+                <span className="text-yellow-400 animate-pulse">✨</span>
+                {settings.runningText}
+                <span className="text-white/40">|</span>
+                Kepala Sekolah: {schoolProfile.headmaster}
+                <span className="text-yellow-400 animate-pulse">✨</span>
+              </span>
+            </div>
           </div>
         </div>
 
         {/* Date and Work Hours Info */}
         <div className="relative z-10 px-1 mt-2">
-          <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-2 px-3.5 shadow-xl flex justify-between items-center text-white">
+          <div className="bg-white/10 border border-white/20 rounded-xl p-2 px-3.5 shadow-xl flex justify-between items-center text-white">
             <div className="flex flex-col">
               <div className="flex items-center gap-1 mb-0.5">
                 <Calendar size={9} className="text-blue-300" />

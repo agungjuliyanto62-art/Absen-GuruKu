@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'motion/react';
 
 interface MobileWrapperProps {
   children: React.ReactNode;
@@ -9,9 +8,7 @@ interface MobileWrapperProps {
 export default function MobileWrapper({ children, hasPadding = true }: MobileWrapperProps) {
   return (
     <div className="h-full bg-slate-100 flex justify-center items-start lg:items-center p-0 lg:p-4 overflow-hidden">
-      <motion.div 
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
+      <div 
         className="w-full h-full lg:max-w-[420px] lg:h-[840px] bg-white lg:rounded-[3rem] lg:shadow-2xl overflow-hidden flex flex-col relative lg:border-[8px] lg:border-slate-800"
       >
         <div className={cn(
@@ -20,7 +17,7 @@ export default function MobileWrapper({ children, hasPadding = true }: MobileWra
         )}>
           {children}
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }

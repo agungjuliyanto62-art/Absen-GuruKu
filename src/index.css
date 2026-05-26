@@ -55,3 +55,21 @@
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #f43f5e; /* Rose 500 */
 }
+
+/* GPU-Accelerated CSS Marquee */
+@keyframes cssMarquee {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.animate-css-marquee {
+  display: inline-flex;
+  white-space: nowrap;
+  animation: cssMarquee 20s linear infinite;
+  will-change: transform;
+}
+

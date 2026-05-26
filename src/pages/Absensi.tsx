@@ -76,6 +76,91 @@ export default function Absensi() {
   const [verifying, setVerifying] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const navigate = useNavigate();
+  const [isRefreshingLocation, setIsRefreshingLocation] = useState(false);
+
+  const refreshGPS = () => {
+    if (!navigator.geolocation) return;
+    setIsRefreshingLocation(true);
+    
+    let bestPos: GeolocationPosition | null = null;
+    
+    // Open a temporary real-time watch session for 3.5 seconds
+    // to capture multiple consecutive samples from the hardware and lock onto the absolute most accurate satellite reference
+    const tempWatchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        const currentAcc = pos.coords.accuracy;
+        if (!bestPos || currentAcc < bestPos.coords.accuracy) {
+          bestPos = pos;
+        }
+
+        const latitude = bestPos.coords.latitude;
+        const longitude = bestPos.coords.longitude;
+        const accuracy = bestPos.coords.accuracy;
+
+        setLocation({
+          lat: latitude,
+          lng: longitude,
+          address: 'Lokasi Terdeteksi',
+          accuracy: accuracy
+        });
+        
+        // Accurate Haversine calculation
+        const R = 6371e3; // metres
+        const φ1 = latitude * Math.PI/180;
+        const φ2 = officeLocation[0] * Math.PI/180;
+        const Δφ = (officeLocation[0]-latitude) * Math.PI/180;
+        const Δλ = (officeLocation[1]-longitude) * Math.PI/180;
+
+        const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+                  Math.cos(φ1) * Math.cos(φ2) *
+                  Math.sin(Δλ/2) * Math.sin(Δλ/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+        const dist = R * c;
+        setDistance(dist);
+        
+        // Auto-Adjusted logic: extend standard radius by the GPS tolerance index (up to 120m maximum offset)
+        // This is extremely helpful indoors or where GPS satellites drift, preventing teachers from getting false lockout errors
+        const dynamicTolerance = toleranceMeters + Math.min(accuracy, 120);
+        setIsWithinRange(dist <= dynamicTolerance);
+      },
+      (err) => {
+        console.error("GPS scan error, trying single request:", err);
+        // Fallback to classic fast request if watch is restricted or times out
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const { latitude, longitude, accuracy } = pos.coords;
+            setLocation({
+              lat: latitude,
+              lng: longitude,
+              address: 'Lokasi Terdeteksi',
+              accuracy: accuracy
+            });
+            const R = 6371e3;
+            const φ1 = latitude * Math.PI/180;
+            const φ2 = officeLocation[0] * Math.PI/180;
+            const Δφ = (officeLocation[0]-pos.coords.latitude) * Math.PI/180;
+            const Δλ = (officeLocation[1]-pos.coords.longitude) * Math.PI/180;
+            const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ/2) * Math.sin(Δλ/2);
+            const dist = R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+            setDistance(dist);
+            setIsWithinRange(dist <= (toleranceMeters + Math.min(accuracy, 120)));
+          },
+          (innerErr) => {
+            console.error("Fallback GPS error:", innerErr);
+          },
+          { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+        );
+      },
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
+    );
+
+    // Grace period to gather the best GPS signals automatically
+    setTimeout(() => {
+      navigator.geolocation.clearWatch(tempWatchId);
+      setIsRefreshingLocation(false);
+    }, 3200);
+  };
 
   const todayStr = useMemo(() => format(new Date(), 'yyyy-MM-dd'), []);
   const todayRecord = attendanceData.find(r => r.date === todayStr && r.userId === user?.id);
@@ -91,9 +176,22 @@ export default function Absensi() {
 
   useEffect(() => {
     if (navigator.geolocation) {
+      let bestPos: GeolocationPosition | null = null;
       const watchId = navigator.geolocation.watchPosition(
         (pos) => {
-          const { latitude, longitude, accuracy } = pos.coords;
+          const currentAcc = pos.coords.accuracy;
+          
+          // If we already successfully locked onto a high precision coordinate, 
+          // filter out raw coordinate drift if a subsequent packet is highly inaccurate / cell-tower jump
+          if (!bestPos || currentAcc < bestPos.coords.accuracy) {
+            bestPos = pos;
+          }
+          
+          // Use the best received coordinate so far if the new one has more than 2.5x worse accuracy, 
+          // keeping the position elegant and steady.
+          const activePos = (currentAcc > bestPos.coords.accuracy * 2.5 && bestPos) ? bestPos : pos;
+          const { latitude, longitude, accuracy } = activePos.coords;
+
           setLocation({
             lat: latitude,
             lng: longitude,
@@ -115,12 +213,15 @@ export default function Absensi() {
 
           const dist = R * c;
           setDistance(dist);
-          setIsWithinRange(dist <= toleranceMeters);
+          
+          // Compensate with dynamic tolerance based on GPS hardware inaccuracy (max 120m adjustment)
+          const dynamicTolerance = toleranceMeters + Math.min(accuracy, 120);
+          setIsWithinRange(dist <= dynamicTolerance);
         },
         () => {
           // Keep default if permission denied
         },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
       );
       return () => navigator.geolocation.clearWatch(watchId);
     }
@@ -159,8 +260,21 @@ export default function Absensi() {
     else if (!isWithinRange) violationType = 'outside_radius';
 
     const canvas = document.createElement('canvas');
-    const width = video.videoWidth;
-    const height = video.videoHeight;
+    
+    // Scale down image to max 640px to compress the size for Firebase
+    let width = video.videoWidth;
+    let height = video.videoHeight;
+    const max_dimension = 640;
+    if (width > max_dimension || height > max_dimension) {
+      if (width > height) {
+        height = Math.round((height * max_dimension) / width);
+        width = max_dimension;
+      } else {
+        width = Math.round((width * max_dimension) / height);
+        height = max_dimension;
+      }
+    }
+
     canvas.width = width;
     canvas.height = height;
     const ctx = canvas.getContext('2d');
@@ -174,8 +288,8 @@ export default function Absensi() {
     ctx.restore();
 
     // Add Watermark
-    const fontSize = Math.max(12, Math.floor(width / 45));
-    const padding = Math.floor(width / 50);
+    const fontSize = Math.max(11, Math.floor(width / 38));
+    const padding = Math.floor(width / 45);
     ctx.font = `bold ${fontSize}px Inter, sans-serif`;
     
     const name = user?.name || 'Guru';
@@ -200,16 +314,16 @@ export default function Absensi() {
       if (metric.width > maxTextWidth) maxTextWidth = metric.width;
     });
 
-    const boxPadding = padding + 5;
+    const boxPadding = padding;
     const boxWidth = maxTextWidth + (boxPadding * 2);
     const boxHeight = (lines.length * (fontSize + 6)) + (boxPadding * 2);
 
     // Position: Bottom Left with healthy margin to avoid getting cut
-    const xPos = 25; 
-    const yPos = height - boxHeight - 25;
+    const xPos = 15; 
+    const yPos = height - boxHeight - 15;
 
     // Draw background
-    ctx.fillStyle = violationType === 'fake_gps' ? 'rgba(225, 29, 72, 0.8)' : 'rgba(0, 0, 0, 0.6)';
+    ctx.fillStyle = violationType === 'fake_gps' ? 'rgba(225, 29, 72, 0.85)' : 'rgba(15, 23, 42, 0.75)';
     ctx.fillRect(xPos, yPos, boxWidth, boxHeight);
 
     // Draw text
@@ -223,7 +337,8 @@ export default function Absensi() {
       );
     });
 
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+    // Compress to JPEG with 0.6 quality (extremely lightweight!)
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
     setPhoto(dataUrl);
     
     setVerifying(true);
@@ -298,10 +413,11 @@ export default function Absensi() {
              </div>
           </div>
           <button 
-            onClick={() => window.location.reload()}
-            className="w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center text-slate-700 active:scale-90 transition-transform pointer-events-auto"
+            onClick={refreshGPS}
+            disabled={isRefreshingLocation}
+            className="w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center text-slate-700 active:scale-95 transition-transform pointer-events-auto disabled:opacity-80"
           >
-            <RotateCw size={20} />
+            <RotateCw size={20} className={isRefreshingLocation ? "animate-spin text-primary" : "transition-transform"} />
           </button>
         </div>
       </div>
@@ -343,18 +459,48 @@ export default function Absensi() {
                      </div>
                      <div>
                         <p className="text-[13px] font-bold text-slate-400 leading-none mb-1">Status Lokasi</p>
-                        <p className={`text-[14px] font-black tracking-tight ${isWithinRange ? 'text-slate-800' : 'text-rose-500'}`}>
-                          {isWithinRange ? 'Lokasi Valid (Dalam Radius)' : `Terlalu Jauh (${Math.round(distance || 0)}m)`}
+                        <p className={`text-[14px] font-black tracking-tight ${isWithinRange ? 'text-emerald-600' : 'text-rose-500'}`}>
+                          {isWithinRange 
+                            ? (location && location.accuracy > 30 
+                              ? 'Valid (Radius Disesuaikan)' 
+                              : 'Lokasi Valid (Dalam Radius)') 
+                            : `Terlalu Jauh (${Math.round(distance || 0)}m)`}
                         </p>
+                        {isWithinRange && location && location.accuracy > 30 && (
+                          <p className="text-[10px] text-emerald-500 font-bold mt-0.5 leading-tight italic">
+                            Sinyal lemah, kompensasi otomatis aktif agar bisa absen
+                          </p>
+                        )}
                      </div>
                   </div>
                   <div className="flex items-center gap-4 pt-4">
                      <div className="w-10 h-10 flex items-center justify-center text-slate-800">
-                        <Target size={24} strokeWidth={2} />
+                        <Target size={24} strokeWidth={2} className="text-indigo-600" />
                      </div>
-                     <div>
+                     <div className="flex-1">
                         <p className="text-[13px] font-bold text-slate-400 leading-none mb-1">Akurasi GPS</p>
-                        <p className="text-[14px] font-black text-slate-800 tracking-tight">{Math.round(location?.accuracy || 0)} Meter</p>
+                        <div className="flex items-center justify-between">
+                          <p className="text-[14px] font-black text-slate-800 tracking-tight">
+                            {location?.accuracy ? `${Math.round(location.accuracy)} Meter` : 'Mendeteksi...'}
+                          </p>
+                          <span className={`text-[9px] uppercase font-black tracking-widest px-2.5 py-1 rounded-full ${
+                            !location?.accuracy 
+                              ? 'bg-slate-100 text-slate-500' 
+                              : location.accuracy <= 15 
+                                ? 'bg-emerald-100 text-emerald-700' 
+                                : location.accuracy <= 50 
+                                  ? 'bg-amber-100 text-amber-700' 
+                                  : 'bg-indigo-100 text-indigo-700 animate-pulse'
+                          }`}>
+                            {!location?.accuracy 
+                              ? 'Mencari...' 
+                              : location.accuracy <= 15 
+                                ? 'Sangat Presisi' 
+                                : location.accuracy <= 50 
+                                  ? 'Presisi Sedang' 
+                                  : 'Optimasi Otomatis'}
+                          </span>
+                        </div>
                      </div>
                   </div>
                 </div>

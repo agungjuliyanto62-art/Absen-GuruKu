@@ -457,7 +457,7 @@ function HubView({ stats, onNavigate, counts, users, attendance, schoolProfile }
     if (saved) {
       try {
         const list = JSON.parse(saved);
-        const currentSchoolName = schoolProfile?.name || 'SMPN Tulang Bawang';
+        const currentSchoolName = schoolProfile?.name || 'SMP Negeri 1 Banjar Margo';
         // Match the subscription from school name
         const found = list.find((p: any) => 
           p.name?.toLowerCase().includes("tulang bawang") || 
@@ -711,6 +711,42 @@ function SettingsView({ settings, onUpdate, schoolProfile, updateSchoolProfile, 
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isSavingPassword, setIsSavingPassword] = useState(false);
 
+  const [waNumber, setWaNumber] = useState(settings?.whatsappNumber || '');
+  const [waTemplate, setWaTemplate] = useState(settings?.whatsappTemplate || '');
+  const [isSavingWhatsapp, setIsSavingWhatsapp] = useState(false);
+
+  useEffect(() => {
+    if (settings) {
+      setWaNumber(settings.whatsappNumber || '');
+      setWaTemplate(settings.whatsappTemplate || '');
+    }
+  }, [settings?.whatsappNumber, settings?.whatsappTemplate]);
+
+  const handleUpdateWhatsApp = async () => {
+    setIsSavingWhatsapp(true);
+    const sanitizedNumber = waNumber.replace(/[^0-9]/g, '');
+    await onUpdate({
+      whatsappNumber: sanitizedNumber,
+      whatsappTemplate: waTemplate
+    });
+    setIsSavingWhatsapp(false);
+    alert('Konfigurasi WhatsApp Atasan berhasil disimpan!');
+  };
+
+  const handleDeleteWhatsApp = async () => {
+    if (window.confirm('Apakah Anda yakin ingin menghapus/menonaktifkan integrasi nomor WhatsApp atasan?')) {
+      setIsSavingWhatsapp(true);
+      setWaNumber('');
+      setWaTemplate('Halo Atasan, saya [Nama] mengajukan izin [Jenis] dari tanggal [TanggalMulai] s/d [TanggalSelesai] dengan alasan: [Alasan]. Terima kasih.');
+      await onUpdate({
+        whatsappNumber: '',
+        whatsappTemplate: 'Halo Atasan, saya [Nama] mengajukan izin [Jenis] dari tanggal [TanggalMulai] s/d [TanggalSelesai] dengan alasan: [Alasan]. Terima kasih.'
+      });
+      setIsSavingWhatsapp(false);
+      alert('Integrasi WhatsApp dinonaktifkan.');
+    }
+  };
+
   const handleUpdateSchoolName = async () => {
     setIsSavingProfile(true);
     await updateSchoolProfile({ ...schoolProfile, name: schoolName });
@@ -951,6 +987,117 @@ function SettingsView({ settings, onUpdate, schoolProfile, updateSchoolProfile, 
             {isSavingProfile ? <RefreshCw size={14} className="animate-spin" /> : <Save size={14} />}
             Simpan Nama Sekolah
           </button>
+        </div>
+      </section>
+
+      {/* INTEGRASI WHATSAPP ATASAN */}
+      <section className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-100 space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 shadow-sm border border-emerald-100">
+              <MessageSquare size={20} />
+            </div>
+            <div>
+              <h3 className="text-xs font-black uppercase italic tracking-widest text-slate-800">Integrasi WA Atasan</h3>
+              <p className="text-[8px] font-black uppercase text-slate-400">Hubungkan Permohonan Izin Guru ke WhatsApp Atasan</p>
+            </div>
+          </div>
+          {settings?.whatsappNumber && (
+            <span className="text-[8px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 animate-pulse">
+              Aktif
+            </span>
+          )}
+        </div>
+
+        <div className="space-y-4">
+          <div className="space-y-1">
+            <label className="text-[9px] font-black uppercase text-slate-400 italic">No WhatsApp Atasan / Kepala Sekolah</label>
+            <input 
+              type="text" 
+              value={waNumber}
+              onChange={(e) => setWaNumber(e.target.value)}
+              placeholder="Contoh: 628123456789"
+              className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-xs font-black focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+            />
+            <p className="text-[8px] text-slate-400 italic leading-none mt-1">
+              *Masukkan nomor lengkap dengan kode negara tanpa spasi atau lambang tambah (+). Contoh: <b>628123456789</b>.
+            </p>
+          </div>
+
+          <div className="space-y-1">
+            <div className="flex items-center justify-between">
+              <label className="text-[9px] font-black uppercase text-slate-400 italic">Format Teks Pesan Izin</label>
+              <span className="text-[8px] font-black text-indigo-500 uppercase tracking-tight italic">Klik Badge untuk Menyisipkan</span>
+            </div>
+            
+            <textarea 
+              value={waTemplate}
+              onChange={(e) => setWaTemplate(e.target.value)}
+              className="w-full bg-slate-50 border border-[#e2e8f0] rounded-2xl p-4 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+              rows={4}
+              placeholder="Format template pesan WhatsApp..."
+            />
+
+            {/* Quick Action Placeholders badges */}
+            <div className="flex flex-wrap gap-2 pt-1">
+              {[
+                { label: '[Nama]', tip: 'Nama Guru' },
+                { label: '[Jenis]', tip: 'Jenis Izin (Sakit/Izin/Cuti)' },
+                { label: '[TanggalMulai]', tip: 'Tgl Mulai' },
+                { label: '[TanggalSelesai]', tip: 'Tgl Selesai' },
+                { label: '[Alasan]', tip: 'Alasan Izin' }
+              ].map((tag) => (
+                <button
+                  key={tag.label}
+                  type="button"
+                  onClick={() => setWaTemplate(prev => prev + ' ' + tag.label + ' ')}
+                  className="px-2.5 py-1 text-[8px] font-black uppercase tracking-wider bg-slate-100 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 rounded-lg border border-slate-200 hover:border-indigo-100 transition-all active:scale-95"
+                  title={tag.tip}
+                >
+                  {tag.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* LIVE PREVIEW BOX */}
+          <div className="border border-slate-100 bg-slate-50 rounded-3xl p-4 space-y-2">
+            <span className="text-[8px] font-black uppercase text-slate-400 tracking-widest italic">Live Preview Pesan WhatsApp :</span>
+            <div className="bg-[#DCF8C6] border border-[#C7EDB4] rounded-2xl p-3 shadow-sm text-xs text-slate-800 leading-normal max-w-sm relative">
+              <p className="whitespace-pre-wrap font-medium text-[11px] pb-2">
+                {waTemplate
+                  ? waTemplate
+                      .replace(/\[Nama\]/g, 'Budi Gunawan, S.Pd.')
+                      .replace(/\[Jenis\]/g, 'Izin Sakit')
+                      .replace(/\[TanggalMulai\]/g, '26 Mei 2026')
+                      .replace(/\[TanggalSelesai\]/g, '27 Mei 2026')
+                      .replace(/\[Alasan\]/g, 'Demam panas tinggi & disarankan dokter istirahat')
+                  : 'Mohon isi format pesan di atas...'}
+              </p>
+              <div className="absolute right-2 bottom-1 flex items-center gap-1">
+                <span className="text-[8px] text-slate-400">10:00</span>
+                <span className="text-emerald-600 text-[10px] font-bold">✓✓</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 pt-2">
+            <button
+              onClick={handleDeleteWhatsApp}
+              disabled={isSavingWhatsapp}
+              className="py-3.5 bg-rose-50 text-rose-600 rounded-2xl font-black text-[9px] uppercase tracking-widest hover:bg-rose-100 transition-colors flex items-center justify-center gap-1.5 active:scale-95 disabled:opacity-50"
+            >
+              Hapus Integrasi
+            </button>
+            <button
+              onClick={handleUpdateWhatsApp}
+              disabled={isSavingWhatsapp}
+              className="py-3.5 bg-emerald-600 text-white rounded-2xl font-black text-[9px] uppercase tracking-widest hover:bg-emerald-700 transition-colors flex items-center justify-center gap-1.5 active:scale-95 disabled:opacity-50 shrink-0"
+            >
+              {isSavingWhatsapp ? <RefreshCw size={12} className="animate-spin" /> : <Save size={12} />}
+              Simpan WhatsApp
+            </button>
+          </div>
         </div>
       </section>
 

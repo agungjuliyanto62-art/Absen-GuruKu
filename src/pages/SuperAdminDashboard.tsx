@@ -2019,8 +2019,8 @@ function BroadcastView({ broadcasts, setBroadcasts, addLog, showToast, maintenan
         await setDoc(docRef, {
           radius: 100,
           center: { lat: -6.2088, lng: 106.8456 },
-          locationName: 'SMPN Tulang Bawang',
-          runningText: 'Selamat Datang di Aplikasi Absensi Digital SMPN Tulang Bawang',
+          locationName: 'SMP Negeri 1 Banjar Margo',
+          runningText: 'Selamat Datang di Aplikasi Absensi Digital SMP Negeri 1 Banjar Margo',
           workHours: {
             entryStart: '06:30',
             entryEnd: '08:00',

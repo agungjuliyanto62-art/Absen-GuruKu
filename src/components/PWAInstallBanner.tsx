@@ -93,11 +93,8 @@ export default function PWAInstallBanner() {
       <div className="w-full bg-slate-900 border-b border-sky-500/25 px-4 py-3 text-white font-sans text-xs flex flex-row items-center justify-between gap-4 sticky top-0 z-[99999] shadow-lg shadow-sky-500/5 backdrop-blur-md">
         <div className="flex items-center gap-3">
           {/* Custom Miniature PWA Logo */}
-          <div className="w-9 h-9 flex-shrink-0 bg-slate-950 rounded-xl border border-sky-500/10 flex items-center justify-center p-1.5 shadow-md">
-            <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full text-sky-500">
-              <path d="M50 10C27.9 10 10 27.9 10 50C10 72.1 27.9 90 50 90C72.1 90 90 72.1 90 50" stroke="white" strokeWidth="2" />
-              <path d="M50 85 C30.67 85 15 69.33 15 50 C15 30.67 30.67 15 50 15 C69.33 15 85 30.67 85 50 C85 58 82.3 65.4 77.7 71.2 L64 57.5 M50 70 C39 70 30 61.1 30 50 C30 38.9 38.9 30 50 30 C61.1 30 70 38.9 70 50 C70 55.5 67.8 60.5 64.1 64.1 M50 55 C47.2 55 45 52.8 45 50 C45 47.2 47.2 45 50 45" stroke="currentColor" strokeWidth="8" strokeLinecap="round" />
-            </svg>
+          <div className="w-10 h-10 flex-shrink-0 bg-white rounded-xl border border-slate-200/80 flex items-center justify-center p-1 shadow-md">
+            <img src="/logo.svg" alt="Logo" className="w-full h-full object-contain rounded-lg" referrerPolicy="no-referrer" />
           </div>
           <div>
             <h4 className="font-extrabold text-[13px] tracking-tight leading-none text-white flex items-center gap-1.5">
@@ -134,11 +131,8 @@ export default function PWAInstallBanner() {
           <div className="bg-slate-900 border border-slate-800 rounded-[2.5rem] w-full max-w-sm p-8 shadow-2xl text-white relative">
             
             {/* Miniature spiral icon */}
-            <div className="w-16 h-16 bg-slate-950 rounded-2xl border border-sky-500/20 flex items-center justify-center p-2.5 shadow-lg mx-auto mb-5">
-              <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full text-sky-500">
-                <path d="M50 10C27.9 10 10 27.9 10 50C10 72.1 27.9 90 50 90C72.1 90 90 72.1 90 50" stroke="white" strokeWidth="2" />
-                <path d="M50 85 C30.67 85 15 69.33 15 50 C15 30.67 30.67 15 50 15 C69.33 15 85 30.67 85 50 C85 58 82.3 65.4 77.7 71.2 L64 57.5 M50 70 C39 70 30 61.1 30 50 C30 38.9 38.9 30 50 30 C61.1 30 70 38.9 70 50 C70 55.5 67.8 60.5 64.1 64.1 M50 55 C47.2 55 45 52.8 45 50 C45 47.2 47.2 45 50 45" stroke="currentColor" strokeWidth="8" strokeLinecap="round" />
-              </svg>
+            <div className="w-20 h-20 bg-white rounded-3xl border border-slate-200 flex items-center justify-center p-2 shadow-xl mx-auto mb-5">
+              <img src="/logo.svg" alt="App Logo" className="w-full h-full object-contain rounded-2xl" referrerPolicy="no-referrer" />
             </div>
 
             <h3 className="text-lg font-black italic uppercase tracking-wider text-center text-white">Petunjuk Pemasangan</h3>

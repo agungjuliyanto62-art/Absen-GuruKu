@@ -150,21 +150,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [settings, setSettings] = useState<SchoolSettings>({
     radius: 100,
     center: { lat: -6.2088, lng: 106.8456 },
-    locationName: 'SMPN Tulang Bawang',
-    runningText: 'Selamat Datang di Aplikasi Absensi Digital SMPN Tulang Bawang',
+    locationName: 'SMP Negeri 1 Banjar Margo',
+    runningText: 'Selamat Datang di Aplikasi Absensi Digital SMP Negeri 1 Banjar Margo',
     workHours: {
       entryStart: '06:30',
       entryEnd: '08:00',
       exitStart: '15:00',
       exitEnd: '17:00'
-    }
+    },
+    whatsappNumber: '',
+    whatsappTemplate: 'Halo Atasan, saya [Nama] mengajukan izin [Jenis] dari tanggal [TanggalMulai] s/d [TanggalSelesai] dengan alasan: [Alasan]. Terima kasih.'
   });
   const [schoolProfile, setSchoolProfile] = useState<SchoolProfile>({
-    name: 'SMPN Tulang Bawang',
-    address: 'Jl. Raya Tulang Bawang No. 123, Kabupaten Tulang Bawang, Lampung',
+    name: 'SMP Negeri 1 Banjar Margo',
+    address: 'Jl. Lintas Timur, Kec. Banjar Margo, Kabupaten Tulang Bawang, Lampung',
     phone: '0721-123456',
-    email: 'info@smpntulangbawang.sch.id',
-    website: 'www.smpntulangbawang.sch.id',
+    email: 'info@smpn1banjarmargo.sch.id',
+    website: 'www.smpn1banjarmargo.sch.id',
     vision: 'Mewujudkan generasi yang bertaqwa, cerdas, terampil dan berbudaya lingkungan.',
     mission: [
       'Menanamkan keyakinan ketaqwaan melalui pengamalan ajaran agama.',
@@ -189,7 +191,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           await setDoc(doc(db, 'settings', 'school'), settings);
           console.log('✅ Default settings seeded');
         } else {
-          setSettings(settingsDoc.data() as SchoolSettings);
+          const data = settingsDoc.data() as SchoolSettings;
+          let changed = false;
+          if (data.locationName === 'SMPN Tulang Bawang') {
+            data.locationName = 'SMP Negeri 1 Banjar Margo';
+            data.runningText = 'Selamat Datang di Aplikasi Absensi Digital SMP Negeri 1 Banjar Margo';
+            changed = true;
+          }
+          if (data.whatsappNumber === undefined) {
+            data.whatsappNumber = '';
+            changed = true;
+          }
+          if (data.whatsappTemplate === undefined) {
+            data.whatsappTemplate = 'Halo Atasan, saya [Nama] mengajukan izin [Jenis] dari tanggal [TanggalMulai] s/d [TanggalSelesai] dengan alasan: [Alasan]. Terima kasih.';
+            changed = true;
+          }
+          if (changed) {
+            await setDoc(doc(db, 'settings', 'school'), data);
+            console.log('✅ School settings automatically updated/migrated with WhatsApp defaults');
+          }
+          setSettings(data);
         }
 
         // Seed School Profile
@@ -200,7 +221,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           await setDoc(doc(db, 'profile', 'school'), schoolProfile);
           console.log('✅ Default profile seeded');
         } else {
-          setSchoolProfile(profileDoc.data() as SchoolProfile);
+          const data = profileDoc.data() as SchoolProfile;
+          if (data.name === 'SMPN Tulang Bawang') {
+            data.name = 'SMP Negeri 1 Banjar Margo';
+            data.address = 'Jl. Lintas Timur, Kec. Banjar Margo, Kabupaten Tulang Bawang, Lampung';
+            data.email = 'info@smpn1banjarmargo.sch.id';
+            data.website = 'www.smpn1banjarmargo.sch.id';
+            await setDoc(doc(db, 'profile', 'school'), data);
+            console.log('✅ School profile automatically updated/migrated');
+          }
+          setSchoolProfile(data);
         }
         
         // Seed Admin user if not exists
@@ -224,7 +254,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 status: 'active',
                 avatar: `https://ui-avatars.com/api/?name=Administrator&background=random`,
                 joinDate: new Date().toISOString().split('T')[0],
-                location: { lat: -6.2088, lng: 106.8456, address: 'SMPN Tulang Bawang' }
+                location: { lat: -6.2088, lng: 106.8456, address: 'SMP Negeri 1 Banjar Margo' }
               });
               console.log('✅ Admin user 123 created');
             }

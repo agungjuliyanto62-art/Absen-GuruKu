@@ -62,6 +62,8 @@ export interface SchoolSettings {
   isMaintenanceActive?: boolean;
   maintenanceMessage?: string;
   maintenanceEndTime?: number;
+  whatsappNumber?: string;
+  whatsappTemplate?: string;
 }
 
 export interface SchoolProfile {

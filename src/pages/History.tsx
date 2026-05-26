@@ -87,6 +87,8 @@ export default function History() {
 
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [viewingPhoto, setViewingPhoto] = useState<string | null>(null);
+  const [viewingPhotoType, setViewingPhotoType] = useState<string>('Masuk');
 
   const handleDownloadExcel = () => {
     const { attendances } = filteredData;
@@ -504,12 +506,45 @@ export default function History() {
                     </div>
                   )}
 
-                  {act.type === 'attendance' && act.photo && (
-                    <div className="relative rounded-2xl overflow-hidden aspect-video bg-slate-100 group">
-                      <img src={act.photo} alt="Bukti Foto" className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Camera size={24} className="text-white" />
-                      </div>
+                  {act.type === 'attendance' && (act.photo || act.photoOut) && (
+                    <div className={`grid ${act.photo && act.photoOut ? 'grid-cols-2' : 'grid-cols-1'} gap-3`}>
+                      {act.photo && (
+                        <div className="flex flex-col gap-1">
+                          <span className="text-[8px] font-black text-slate-400 uppercase tracking-wider italic">Foto Masuk</span>
+                          <div 
+                            onClick={() => {
+                              setViewingPhoto(act.photo || null);
+                              setViewingPhotoType('Masuk');
+                            }}
+                            className="relative rounded-2xl overflow-hidden aspect-video bg-slate-100 group cursor-pointer active:scale-95 transition-transform"
+                          >
+                            <img src={act.photo} alt="Bukti Foto Masuk" className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Camera size={18} className="text-white" />
+                              <span className="text-[10px] text-white font-bold ml-1">Lihat Full</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {act.photoOut && (
+                        <div className="flex flex-col gap-1">
+                          <span className="text-[8px] font-black text-slate-400 uppercase tracking-wider italic">Foto Pulang</span>
+                          <div 
+                            onClick={() => {
+                              setViewingPhoto(act.photoOut || null);
+                              setViewingPhotoType('Pulang');
+                            }}
+                            className="relative rounded-2xl overflow-hidden aspect-video bg-slate-100 group cursor-pointer active:scale-95 transition-transform"
+                          >
+                            <img src={act.photoOut} alt="Bukti Foto Pulang" className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Camera size={18} className="text-white" />
+                              <span className="text-[10px] text-white font-bold ml-1">Lihat Full</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -617,6 +652,54 @@ export default function History() {
                   Terapkan Filter
                 </button>
               </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Full Screen Photo Viewer Modal */}
+      <AnimatePresence>
+        {viewingPhoto && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setViewingPhoto(null)}
+              className="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-[2000] flex flex-col items-center justify-center p-4 cursor-zoom-out"
+            >
+              <div className="absolute top-6 right-6 flex items-center gap-2 pointer-events-auto">
+                <span className="text-[10px] font-black uppercase text-white/50 tracking-widest bg-white/10 px-3 py-1.5 rounded-full backdrop-blur-md">
+                  Foto {viewingPhotoType}
+                </span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setViewingPhoto(null);
+                  }}
+                  className="w-10 h-10 bg-white/15 text-white hover:bg-white/25 rounded-full flex items-center justify-center backdrop-blur-sm active:scale-95 text-lg font-bold"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="max-w-full max-h-[75vh] rounded-3xl overflow-hidden shadow-2xl border border-white/10 bg-slate-900 flex items-center justify-center"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <img 
+                  src={viewingPhoto} 
+                  alt="Full Check" 
+                  className="max-w-full max-h-[75vh] object-contain mx-auto" 
+                />
+              </motion.div>
+
+              <p className="mt-6 text-[9px] text-white/40 uppercase tracking-widest font-black text-center pointer-events-none">
+                Klik bebas di mana saja untuk kembali
+              </p>
             </motion.div>
           </>
         )}

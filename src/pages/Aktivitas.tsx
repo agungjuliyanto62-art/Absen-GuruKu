@@ -37,7 +37,33 @@ export default function Aktivitas() {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImage(reader.result as string);
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          const maxDim = 800;
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.6);
+            setImage(compressedDataUrl);
+          } else {
+            setImage(reader.result as string);
+          }
+        };
+        img.src = reader.result as string;
       };
       reader.readAsDataURL(file);
     }
@@ -236,7 +262,7 @@ function PostItem({ post, idx, user, onDelete, onEdit, onLike, onReply }: any) {
 
   const handleShare = async () => {
     const shareData = {
-      title: 'Kabar Guru SMPN Tulang Bawang',
+      title: 'Kabar Guru SMP Negeri 1 Banjar Margo',
       text: `${post.userName}: "${post.content}"`,
       url: window.location.href
     };
@@ -250,7 +276,7 @@ function PostItem({ post, idx, user, onDelete, onEdit, onLike, onReply }: any) {
     } else {
       // Fallback: Copy to clipboard
       try {
-        await navigator.clipboard.writeText(`${shareData.text} \n\nDibagikan dari SMPN Tulang Bawang Apps`);
+        await navigator.clipboard.writeText(`${shareData.text} \n\nDibagikan dari SMP Negeri 1 Banjar Margo Apps`);
         alert('Teks postingan berhasil disalin ke clipboard!');
       } catch (err) {
         console.error('Fallback sharing failed:', err);
